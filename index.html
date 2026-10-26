@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BNC Boiler Daily</title>
+<meta name="theme-color" content="#0F3D5E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BNC Boiler">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F4; --card:#FFFFFF; --ink:#13202B; --muted:#5E6C79; --line:#DDE3E9;
+    --brand:#0F3D5E; --brand-2:#164F78; --flame:#E8772E; --flame-soft:#FDEBDD;
+    --ok:#1D8A57; --ok-soft:#E3F4EA; --warn:#B87900; --warn-soft:#FFF3D6; --bad:#C2312B; --bad-soft:#FCE6E4;
+    --radius:14px; --shadow:0 1px 2px rgba(16,32,48,.06),0 4px 14px rgba(16,32,48,.06);
+    --body:"Sarabun","Noto Sans Thai",Tahoma,sans-serif;
+    --mono:"Sarabun","Noto Sans Thai",Tahoma,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);font-variant-numeric:tabular-nums}
+  b,h2,.btn,nav button.on,.grp{font-weight:600}
+  button,input,select,textarea{font:inherit;color:inherit}
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px 96px}
+
+  /* header */
+  header{background:var(--brand);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 56px;position:relative}
+  .login{padding-top:calc(48px + env(safe-area-inset-top))!important}
+  header .in{max-width:528px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .logo{width:38px;height:38px;border-radius:10px;background:var(--flame);display:grid;place-items:center;flex:none}
+  .logo svg{width:22px;height:22px}
+  .ttl{flex:1;min-width:0}
+  .ttl b{display:block;font:600 18px/1.3 var(--mono);letter-spacing:.2px;white-space:nowrap}
+  .ttl span{display:block;font-size:12.5px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .date{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:10px;padding:6px 6px;font-size:13px;width:128px;flex:none;color-scheme:dark}
+
+  /* control card */
+  .ctl{margin-top:-44px;position:relative;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px}
+  .seg{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .seg button{flex:1 0 auto;border:1px solid var(--line);background:#F7F9FB;border-radius:11px;padding:10px 8px;text-align:center;cursor:pointer;white-space:nowrap;line-height:1.25}
+  .seg button small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+  .seg button b{display:block;font:600 15px var(--mono)}
+  .seg button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+  .seg button.on small{color:rgba(255,255,255,.75)}
+  .op{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .op .av{width:34px;height:34px;border-radius:50%;background:var(--flame-soft);color:var(--flame);display:grid;place-items:center;font-weight:700;flex:none}
+  .op .nm{flex:1;min-width:0;line-height:1.3}
+  .op .nm b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .op .nm small{color:var(--muted);font-size:12px}
+  .op button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;color:var(--muted);flex:none}
+  /* login */
+  .login{position:fixed;inset:0;z-index:40;background:var(--brand);display:flex;flex-direction:column;align-items:center;overflow:auto;padding:48px 16px 24px}
+  .login .brand{display:flex;flex-direction:column;align-items:center;gap:10px;color:#fff;margin-bottom:22px;text-align:center}
+  .login .brand .logo{width:56px;height:56px;border-radius:16px}
+  .login .brand .logo svg{width:32px;height:32px}
+  .login .brand b{font-size:22px} .login .brand span{opacity:.75;font-size:14px}
+  .login .card{width:100%;max-width:400px}
+  .eye{border:0;background:none;color:var(--brand-2);font-size:13px;padding:0 12px;cursor:pointer;flex:none}
+  .login .f input{font-size:18px}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+  .stat{background:var(--card);border-radius:12px;padding:10px;box-shadow:var(--shadow)}
+  .stat small{display:block;color:var(--muted);font-size:11.5px;line-height:1.3}
+  .stat b{font:600 18px/1.3 var(--mono)}
+  .stat em{font-style:normal;font-size:11.5px;color:var(--muted)}
+  .due{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:10px 12px;font-size:13.5px}
+  .due i{width:10px;height:10px;border-radius:50%;background:var(--ok);flex:none;box-shadow:0 0 0 4px var(--ok-soft)}
+  .due.late i{background:var(--flame);box-shadow:0 0 0 4px var(--flame-soft)}
+  .due b{font-family:var(--mono)} .due span{color:var(--muted)}
+  .gap{font-size:11.5px;color:var(--warn);text-align:center;margin:-2px 0}
+  .ghostdel{border:0;background:none;color:var(--bad);width:100%;padding:12px;margin-top:6px;cursor:pointer;font-weight:500}
+  .closed{display:flex;gap:8px;align-items:center;background:var(--ok-soft);color:var(--ok);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13.5px}
+
+  h2{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.3px;margin:18px 2px 8px}
+
+  /* hourly slots */
+  .slots{display:flex;flex-direction:column;gap:8px}
+  .slot{display:flex;align-items:stretch;background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;border:1.5px solid transparent;text-align:left;padding:0;width:100%}
+  .slot .t{width:70px;flex:none;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#F5F7FA;border-right:1px solid var(--line)}
+  .slot .t b{font:600 16px var(--mono)}
+  .slot .t small{font-size:10.5px;color:var(--muted)}
+  .slot .v{flex:1;padding:9px 12px;min-width:0}
+  .slot .v .row{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px}
+  .slot .v .row span{white-space:nowrap}
+  .slot .v .row span b{font-family:var(--mono);font-weight:600}
+  .slot .v .who{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .slot .st{width:6px;flex:none;background:var(--line)}
+  .slot.done .st{background:var(--ok)}
+  .slot.alert .st{background:var(--bad)}
+  .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  .tag.w{background:var(--warn-soft);color:var(--warn)} .tag.b{background:var(--bad-soft);color:var(--bad)}
+
+  /* cards & fields */
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .f{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+  .f label{font-size:12.5px;color:var(--muted)}
+  .f .ip{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+  .f .ip:focus-within{border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(22,79,120,.12)}
+  .f input,.f textarea,.f select{border:0;outline:0;padding:10px;width:100%;min-width:0;background:transparent;font-family:var(--mono);font-weight:500;font-size:16px}
+  .f textarea{font-family:inherit;font-weight:400;font-size:15px;resize:vertical;min-height:70px;border:1px solid var(--line);border-radius:10px}
+  .f .u{padding:0 10px;color:var(--muted);font-size:12.5px;white-space:nowrap}
+  .f .hint{font-size:11.5px;color:var(--muted)}
+  .f .hint.bad{color:var(--bad)} .f .hint.warn{color:var(--warn)}
+  .f.bad .ip{border-color:var(--bad);background:var(--bad-soft)}
+  .grp{font-size:13px;font-weight:600;color:var(--brand);margin:6px 0 8px;display:flex;align-items:center;gap:6px}
+  .grp::after{content:"";flex:1;height:1px;background:var(--line)}
+  .lvl{display:flex;gap:6px}
+  .lvl button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 4px;cursor:pointer}
+  .lvl button.on[data-v="ปกติ"]{background:var(--ok);border-color:var(--ok);color:#fff}
+  .lvl button.on[data-v="ต่ำ"],.lvl button.on[data-v="สูง"]{background:var(--warn);border-color:var(--warn);color:#fff}
+  .ro{font:600 22px var(--mono)} .ro small{font:400 12px var(--body);color:var(--muted)}
+
+  .btn{display:flex;justify-content:center;align-items:center;gap:8px;width:100%;border:0;border-radius:12px;padding:13px;font-weight:600;cursor:pointer;background:var(--brand);color:#fff}
+  .btn.flame{background:var(--flame)} .btn.ghost{background:#E8EDF2;color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:default}
+
+  /* history */
+  .hist{display:flex;flex-direction:column;gap:8px}
+  .hi{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:10px 12px;cursor:pointer;border:0;width:100%;text-align:left}
+  .hi .d{width:46px;text-align:center;flex:none}
+  .hi .d b{display:block;font:600 20px/1 var(--mono)}
+  .hi .d small{font-size:11px;color:var(--muted)}
+  .hi .m{flex:1;min-width:0;font-size:13px}
+  .hi .m .row{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted)}
+  .hi .m .row b{color:var(--ink);font-family:var(--mono)}
+
+  /* bottom nav */
+  nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+  nav .in{max-width:560px;margin:0 auto;display:flex}
+  nav button{flex:1;border:0;background:none;padding:9px 0 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);cursor:pointer}
+  nav button svg{width:22px;height:22px}
+  nav button.on{color:var(--brand);font-weight:600}
+
+  /* sheet */
+  .scrim{position:fixed;inset:0;background:rgba(10,20,30,.45);display:none;z-index:10}
+  .sheet{position:fixed;left:0;right:0;bottom:0;max-height:92vh;overflow:auto;background:var(--bg);border-radius:18px 18px 0 0;transform:translateY(100%);transition:transform .25s ease;z-index:11;padding-bottom:env(safe-area-inset-bottom)}
+  .sheet.open{transform:none} .scrim.open{display:block}
+  .sheet .hd{position:sticky;top:0;background:var(--bg);padding:10px 16px 8px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);z-index:1}
+  .sheet .hd b{flex:1;font:600 16px var(--mono)}
+  .sheet .hd .x{border:0;background:#E1E7ED;border-radius:99px;width:32px;height:32px;cursor:pointer;font-size:18px;line-height:1}
+  .sheet .bd{padding:14px 16px 16px;max-width:560px;margin:0 auto}
+
+  .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;transition:.2s;z-index:50;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+  .toast.err{background:var(--bad)}
+  .loading{position:fixed;inset:0;display:none;place-items:center;background:rgba(238,241,244,.6);z-index:60}
+  .loading.show{display:grid}
+  .spin{width:34px;height:34px;border-radius:50%;border:3px solid #C9D3DC;border-top-color:var(--brand);animation:s .8s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .muted{color:var(--muted);font-size:13px}
+  .topbar{position:fixed;top:0;left:0;right:0;height:3px;z-index:70;overflow:hidden;opacity:0;transition:opacity .2s;pointer-events:none}
+  .topbar.show{opacity:1}
+  .topbar i{position:absolute;top:0;bottom:0;width:40%;background:var(--flame);animation:tb 1s ease-in-out infinite}
+  @keyframes tb{0%{left:-40%}100%{left:100%}}
+  .slot.pending{opacity:.6} .slot.pending .st{background:var(--flame)}
+
+  /* reports */
+  .seg2{display:flex;background:#E3E8EE;border-radius:12px;padding:3px;gap:3px;margin:14px 0 10px}
+  .seg2 button{flex:1;border:0;background:none;border-radius:9px;padding:8px;cursor:pointer;color:var(--muted);font-weight:600}
+  .seg2 button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+  .rbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .rbar input,.rbar select{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;font-size:15px;flex:1;min-width:140px}
+  .rbar .btn{width:auto;flex:1;padding:10px 14px;font-size:14px}
+  .paperwrap{background:#fff;border-radius:12px;box-shadow:var(--shadow);overflow:hidden;padding:10px}
+  .paperscale{transform-origin:0 0;width:1000px}
+  .paper{width:1000px;color:#000;font:13px/1.4 "Sarabun","Noto Sans Thai",Tahoma,sans-serif;background:#fff}
+  .paper h1{text-align:center;font-size:19px;margin:0 0 10px}
+  .paper .meta{display:flex;justify-content:space-between;margin:0 0 8px;gap:12px}
+  .paper .line{display:inline-block;min-width:90px;border-bottom:1px dotted #000;text-align:center;font-weight:600;padding:0 6px}
+  .paper table{width:100%;border-collapse:collapse}
+  .paper th,.paper td{border:1px solid #000;padding:3px 4px;text-align:center;font-weight:400;height:22px}
+  .paper th{font-weight:600;background:#f2f2f2;line-height:1.2}
+  .paper td.l{text-align:left}
+  .paper .foot{display:grid;grid-template-columns:1.25fr 1fr;gap:6px 24px;margin-top:10px}
+  .paper .obs{grid-row:span 4;border:1px solid #000;padding:6px;min-height:84px}
+  .paper .sign{text-align:right;margin-top:18px;padding-right:20px;line-height:2}
+  .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+  @media(min-width:520px){.tiles{grid-template-columns:repeat(4,1fr)}}
+  .chart{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:12px 12px 6px;margin-bottom:10px;position:relative}
+  .chart h3{margin:0;font-size:14px}
+  .chart .sub{font-size:11.5px;color:var(--muted);margin-bottom:4px}
+  .chart .lg{display:flex;gap:2px 14px;flex-wrap:wrap;font-size:12px;line-height:1.5;color:var(--ink);margin:4px 0 6px}
+  .chart .lg i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+  .chart svg{width:100%;height:auto;display:block;touch-action:pan-y;overflow:visible}
+  .chart svg text{font:11px "Sarabun","Noto Sans Thai",Tahoma,sans-serif;fill:var(--muted)}
+  .tip{position:absolute;pointer-events:none;background:var(--ink);color:#fff;font-size:12px;border-radius:8px;padding:6px 9px;white-space:nowrap;display:none;z-index:2;line-height:1.5}
+  .tip i{display:inline-block;width:10px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+  .tscroll{overflow-x:auto;border-radius:12px;box-shadow:var(--shadow);margin-bottom:10px}
+  .mtable{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+  .mtable th,.mtable td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  .mtable th{background:#F5F7FA;color:var(--muted);font-weight:600;font-size:11.5px}
+  .mtable td:nth-child(-n+2),.mtable th:nth-child(-n+2){text-align:left}
+  .mtable tbody tr{cursor:pointer}
+  .mtable tr.over td{background:var(--bad-soft)}
+  .mtable tfoot td{font-weight:700;background:#F5F7FA}
+  .ptitle{display:none}
+  #printArea{display:none}
+  @media print{
+    body>*:not(#printArea){display:none!important}
+    #printArea{display:block}
+    html,body{background:#fff}
+    #printArea .paper{width:100%}
+    #printArea .ptitle{display:block;margin:0 0 8px}
+    #printArea .chart,#printArea .stat{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
+    #printArea .tscroll{box-shadow:none;overflow:visible}
+    #printArea .mtable th,#printArea .mtable td{border-bottom:1px solid #999;padding:4px 6px}
+    #printArea .tip{display:none!important}
+    #printArea .stitle,#printArea .muted{display:none}
+    #printArea .chart{padding:8px}
+    #printArea .tiles{grid-template-columns:repeat(4,1fr)}
+    #printArea .mtable tfoot{display:table-row-group}
+    #printArea .mtable thead{display:table-header-group}
+  }
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="in">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2c1 3.5 5 5.6 5 10.2A5 5 0 0 1 12 17a5 5 0 0 1-5-4.8c0-2 .9-3.4 2-4.6.2 1.6 1 2.6 2 3 0-3 .6-5.8 1-8.6zM5 19h14v3H5z"/></svg></div>
+    <div class="ttl"><b>BNC Boiler Daily</b><span>บันทึกประจำวันของหม้อน้ำ</span></div>
+    <input type="date" id="date" class="date">
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="ctl">
+    <div class="seg" id="boilers"></div>
+    <div class="op"><div class="av" id="meAv"></div><div class="nm"><b id="meName"></b><small id="meLic"></small></div><button id="logoutBtn">ออกจากระบบ</button></div>
+  </div>
+
+  <!-- TAB: hourly -->
+  <section id="tab-hourly">
+    <div class="stats" id="stats"></div>
+    <div class="due" id="due"></div>
+    <div class="closed" id="closedBanner" hidden></div>
+    <button class="btn flame" id="addBtn" style="margin-top:10px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>บันทึกค่าตอนนี้</button>
+    <h2 id="listTitle">รายการบันทึก (ล่าสุดอยู่บน)</h2>
+    <div class="slots" id="slots"></div>
+  </section>
+
+  <!-- TAB: summary -->
+  <section id="tab-summary" hidden>
+    <h2>สรุปประจำวัน</h2>
+    <div class="card">
+      <div class="grid2" style="margin-bottom:6px">
+        <div class="f"><label>ประมาณน้ำที่ป้อนเข้าหม้อน้ำ</label><div class="ro" id="sumWater">–</div></div>
+        <div class="f"><label>ประมาณเชื้อเพลิงที่ใช้</label><div class="ro" id="sumFuel">–</div></div>
+      </div>
+      <p class="muted" style="margin:-4px 0 12px">คำนวณอัตโนมัติจากเลขมิเตอร์ (ค่าสุดท้าย − ค่าแรกของวัน)</p>
+      <div class="grp">ระบายน้ำ (Blow Down)</div>
+      <div class="grid2">
+        <div class="f"><label>ครั้งละประมาณ</label><div class="ip"><input id="bdSec" type="number" inputmode="decimal"><span class="u">วินาที</span></div></div>
+        <div class="f"><label>จำนวน</label><div class="ip"><input id="bdTimes" type="number" inputmode="numeric"><span class="u">ครั้ง/วัน</span></div></div>
+      </div>
+      <div class="f"><label>ข้อสังเกต</label><textarea id="obs" placeholder="เช่น เสียงปั๊มผิดปกติ, เปลี่ยนไส้กรอง ฯลฯ"></textarea></div>
+      <button class="btn ghost" id="saveDaily">บันทึกสรุป</button>
+    </div>
+    <h2>ลงชื่อผู้ควบคุมประจำหม้อน้ำ</h2>
+    <div class="card" id="signCard"></div>
+  </section>
+
+  <!-- TAB: report -->
+  <section id="tab-report" hidden>
+    <div class="seg2" id="rmode"><button data-m="day" class="on">รายงานรายวัน</button><button data-m="month">รายงานรายเดือน</button></div>
+    <div id="rDay">
+      <div class="rbar"><span class="muted" id="rDayInfo" style="flex:2;min-width:180px"></span><button class="btn" id="printDay">พิมพ์ / บันทึก PDF</button></div>
+      <div class="paperwrap" id="paperWrap"><div class="paperscale" id="paperScale"></div></div>
+      <p class="muted" style="margin:8px 2px">เปลี่ยนหม้อน้ำหรือวันที่ได้จากด้านบน · ถ้าต้องการไฟล์ ให้เลือกปลายทางเป็น “บันทึกเป็น PDF” ตอนพิมพ์</p>
+    </div>
+    <div id="rMonth" hidden>
+      <div class="rbar"><input type="month" id="rMonthIn"><select id="rBoiler"></select></div>
+      <div class="rbar"><button class="btn" id="printMonth">พิมพ์ / บันทึก PDF</button><button class="btn ghost" id="csvMonth">ดาวน์โหลด Excel</button></div>
+      <div id="monthBody"></div>
+    </div>
+  </section>
+
+  <!-- TAB: history -->
+  <section id="tab-history" hidden>
+    <h2 id="histTitle">ประวัติย้อนหลัง</h2>
+    <div class="hist" id="hist"></div>
+  </section>
+</div>
+
+<nav><div class="in">
+  <button data-tab="hourly" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>รายชั่วโมง</button>
+  <button data-tab="summary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>สรุปวัน</button>
+  <button data-tab="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>รายงาน</button>
+  <button data-tab="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>ประวัติ</button>
+</div></nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet">
+  <div class="hd"><b id="sheetTitle">บันทึกค่า</b><button class="x" id="sheetClose" aria-label="ปิด">×</button></div>
+  <div class="bd">
+    <div class="f"><label>เวลาที่ตรวจเช็ค</label><div class="ip"><input id="ReadingTime" type="time"><span class="u">น.</span></div><span class="hint">ใส่เวลาปัจจุบันให้อัตโนมัติ แก้ได้ถ้าบันทึกย้อนหลัง</span></div>
+    <div class="grp">หม้อน้ำ</div>
+    <div class="f" id="fSteam"><label>ความดันไอน้ำ</label><div class="ip"><input id="SteamPressure" type="number" step="0.1" inputmode="decimal"><span class="u">bar</span></div><span class="hint" id="hSteam"></span></div>
+    <div class="f"><label>ระดับน้ำในหลอดแก้ว</label>
+      <div class="lvl" id="lvl"><button type="button" data-v="ต่ำ">ต่ำ</button><button type="button" data-v="ปกติ">ปกติ</button><button type="button" data-v="สูง">สูง</button></div>
+    </div>
+    <div class="grp">ปั๊มน้ำเข้าหม้อน้ำ</div>
+    <div class="grid2">
+      <div class="f"><label>ความดัน</label><div class="ip"><input id="FeedPumpPressure" type="number" step="0.1" inputmode="decimal"><span class="u">kg/cm²</span></div></div>
+      <div class="f"><label>อุณหภูมิน้ำเข้า</label><div class="ip"><input id="FeedWaterTemp" type="number" step="0.1" inputmode="decimal"><span class="u">°C</span></div></div>
+    </div>
+    <div class="f" id="fWater"><label>เลขมิเตอร์น้ำ</label><div class="ip"><input id="WaterMeter" type="number" step="0.01" inputmode="decimal"><span class="u">m³</span></div><span class="hint" id="hWater"></span></div>
+    <div class="grp">เชื้อเพลิง</div>
+    <div class="grid2">
+      <div class="f"><label>ความดัน</label><div class="ip"><input id="FuelPressure" type="number" step="0.1" inputmode="decimal"><span class="u">kg/cm²</span></div></div>
+      <div class="f" id="fFuel"><label>เลขมิเตอร์</label><div class="ip"><input id="FuelMeter" type="number" step="0.01" inputmode="decimal"><span class="u">m³</span></div></div>
+    </div>
+    <span class="hint muted" id="hFuel" style="display:block;margin:-6px 0 10px;font-size:11.5px"></span>
+    <div class="grp">ปล่องไฟ</div>
+    <div class="f"><label>อุณหภูมิที่ปล่องไฟ</label><div class="ip"><input id="StackTemp" type="number" step="1" inputmode="decimal"><span class="u">°C</span></div></div>
+    <div class="f"><label>หมายเหตุ</label><textarea id="Remarks" rows="2"></textarea></div>
+    <button class="btn flame" id="saveReading">บันทึกค่า</button>
+    <button class="ghostdel" id="delReading" hidden>ลบรายการนี้</button>
+  </div>
+</div>
+
+<div class="login" id="login" hidden>
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2c1 3.5 5 5.6 5 10.2A5 5 0 0 1 12 17a5 5 0 0 1-5-4.8c0-2 .9-3.4 2-4.6.2 1.6 1 2.6 2 3 0-3 .6-5.8 1-8.6zM5 19h14v3H5z"/></svg></div>
+    <div><b>BNC Boiler Daily</b><br><span>เข้าสู่ระบบผู้ควบคุมหม้อน้ำ</span></div>
+  </div>
+  <div class="card">
+    <div class="f"><label>ชื่อผู้ใช้</label><div class="ip"><input id="userInput" type="text" inputmode="decimal" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="เช่น 001"></div></div>
+    <div class="f"><label>รหัสผ่าน</label><div class="ip"><input id="pinInput" type="password" inputmode="numeric" autocomplete="current-password" maxlength="20" placeholder="••••••"><button type="button" class="eye" id="eyeBtn" aria-label="แสดงรหัส">แสดง</button></div></div>
+    <button class="btn" id="loginBtn" style="margin-top:4px">เข้าสู่ระบบ</button>
+    <p class="muted" style="text-align:center;margin:12px 0 0">ลืมรหัส ติดต่อผู้ดูแลระบบ</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading" id="loading"><div class="spin"></div></div>
+<div class="topbar" id="topbar"><i></i></div>
+<div id="printArea"></div>
+<style id="pageStyle"></style>
+
+<script>
+/* ---------- ตั้งค่า: ลิงก์ Web app (/exec) ของ Google Apps Script ---------- */
+const API_URL = 'https://script.google.com/macros/s/AKfycbxdUtBEf4h-8DGt5BAd-pVde_zcKc6QnjoJTw1bRAaG8aF3Pafui0gLGLj4e5rLI9kaug/exec';
+
+/* ---------- API: ส่งคำสั่งไปที่ Code.gs (doPost) ---------- */
+async function api(fn, ...args) {
+  let data;
+  try {
+    const res = await fetch(API_URL, { method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args }) });
+    data = await res.json();
+  } catch (e) { throw new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ — ตรวจสอบอินเทอร์เน็ต'); }
+  if (!data.ok) {
+    const err = new Error(data.error || 'เกิดข้อผิดพลาด');
+    if (err.message.startsWith('Error: ')) err.message = err.message.slice(7);
+    if (err.message.startsWith('AUTH:')) { logout(true); err.message = err.message.slice(5).trim(); }
+    throw err;
+  }
+  return data.data;
+}
+const call = (fn, ...args) => api(fn, S.token, ...args);
+
+const CHECK_EVERY = 60; // นาที — แนะนำให้เช็คทุก 1 ชั่วโมง (ไม่บังคับ)
+const pad2 = n => String(n).padStart(2, '0');
+const hm = t => { const [h, m] = String(t).split(':').map(Number); const [y, mo, d] = S.date.split('-').map(Number); return new Date(y, mo - 1, d, h, m).getTime(); };
+const dur = m => m < 1 ? 'ไม่ถึง 1 นาที' : m < 60 ? `${m} นาที` : `${Math.floor(m / 60)} ชม.${m % 60 ? ' ' + (m % 60) + ' นาที' : ''}`;
+const FIELDS = ['SteamPressure','FeedPumpPressure','FeedWaterTemp','WaterMeter','FuelPressure','FuelMeter','StackTemp','Remarks'];
+const S = { init:null, boilerId:'', date:'', token:'', me:null, day:null, tab:'hourly', level:'', rmode:'day', month:'', rBoiler:'', monthData:null, charts:[] };
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = (v, d=1) => (v === '' || v === null || v === undefined) ? '–' : Number(v).toLocaleString('th-TH', {maximumFractionDigits:d});
+const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
+
+function toast(msg, err) { const t = $('toast'); t.textContent = msg; t.className = 'toast show' + (err ? ' err' : ''); clearTimeout(t._h); t._h = setTimeout(() => t.className = 'toast', 2400); }
+function busy(on) { $('loading').classList.toggle('show', on); }
+let bgCount = 0;
+function bg(on) { bgCount = Math.max(0, bgCount + (on ? 1 : -1)); $('topbar').classList.toggle('show', bgCount > 0); }
+const dayKey = () => `day:${S.boilerId}:${S.date}`;
+const cacheGet = k => { try { return JSON.parse(store.get(k) || 'null'); } catch (e) { return null; } };
+const cacheSet = (k, v) => store.set(k, JSON.stringify(v));
+const nzv = x => (x === '' || x === null || x === undefined || isNaN(Number(x))) ? null : Number(x);
+const fuelShort = b => { const m = String(b.FuelType || '').match(/\(([^)]+)\)/); return m ? m[1] : (b.FuelType || '-'); };
+const boilerName = (b = boiler()) => `Boiler No.${b.BoilerNo} (${fuelShort(b)})`;
+const boiler = () => S.init.boilers.find(b => b.BoilerID === S.boilerId) || {};
+const isClosed = () => S.day && S.day.log && S.day.log.Status === 'ปิดบันทึกแล้ว';
+const opName = id => (S.init.operators.find(o => o.OperatorID === id) || {}).OperatorName || id || '';
+
+/* ---------- start / login ---------- */
+async function start() {
+  // 1) แสดงข้อมูลล่าสุดที่จำไว้ในเครื่องทันที (ไม่ต้องรอเซิร์ฟเวอร์)
+  S.token = store.get('token') || '';
+  const cInit = cacheGet('init'), cMe = cacheGet('me');
+  if (cInit) {
+    S.init = cInit;
+    S.date = cInit.today;
+    S.boilerId = pickBoiler(store.get('boiler'));
+    $('date').value = S.date; renderBoilers();
+    if (S.token && cMe) { S.me = cMe; showMe(); const d = cacheGet(dayKey()); if (d) { S.day = d; render(); } }
+    else showLogin();
+  }
+  // 2) ดึงข้อมูลจริงจากเซิร์ฟเวอร์ในครั้งเดียว
+  (cInit ? bg : busy)(true);
+  try {
+    const today = new Date(), localToday = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
+    const res = await api('boot', S.token, store.get('boiler') || '', S.date || localToday);
+    S.init = res.init; cacheSet('init', res.init);
+    if (!S.date || (cInit && cInit.today !== res.init.today)) S.date = res.init.today;
+    S.boilerId = pickBoiler(S.boilerId || store.get('boiler'));
+    $('date').value = S.date; renderBoilers();
+    if (res.me) {
+      S.me = res.me; cacheSet('me', res.me); showMe();
+      if (res.day && res.day.logId === `${S.boilerId}-${S.date.replace(/-/g, '')}`) { S.day = res.day; cacheSet(dayKey(), res.day); render(); }
+      else await loadDay();
+      prefetchOthers();
+    } else { S.token = ''; S.me = null; showLogin(); }
+  } catch (e) { toast(e.message, true); if (!S.init) return; }
+  finally { (cInit ? bg : busy)(false); }
+}
+const pickBoiler = id => S.init.boilers.some(b => b.BoilerID === id) ? id : (S.init.boilers[0] || {}).BoilerID;
+
+function showLogin() {
+  $('userInput').value = store.get('lastUser') || '';
+  $('pinInput').value = ''; $('pinInput').type = 'password'; $('eyeBtn').textContent = 'แสดง';
+  $('login').hidden = false;
+  setTimeout(() => ($('userInput').value ? $('pinInput') : $('userInput')).focus(), 50);
+}
+
+async function doLogin() {
+  const user = $('userInput').value.trim();
+  const pin = $('pinInput').value.trim();
+  if (!user) return toast('กรุณาใส่ชื่อผู้ใช้', true);
+  if (!pin) return toast('กรุณาใส่รหัสผ่าน', true);
+  busy(true);
+  try {
+    const res = await api('login', user, pin);
+    S.token = res.token; S.me = res.operator;
+    store.set('token', S.token); store.set('lastUser', user);
+    $('login').hidden = true;
+    await enter();
+    toast(`สวัสดี ${S.me.OperatorName}`);
+  } catch (e) { toast(e.message, true); $('pinInput').value = ''; }
+  busy(false);
+}
+
+function showMe() {
+  $('login').hidden = true;
+  $('meAv').textContent = initial(S.me.OperatorName);
+  $('meName').textContent = S.me.OperatorName;
+  $('meLic').textContent = S.me.Role === 'admin' ? 'ผู้ดูแลระบบ' : (S.me.LicenseNo ? 'ทะเบียน ' + S.me.LicenseNo : '');
+}
+async function enter() { cacheSet('me', S.me); showMe(); await loadDay(); prefetchOthers(); }
+// โหลดข้อมูลวันนี้ของหม้อน้ำลูกอื่นไว้ล่วงหน้า กดสลับแล้วขึ้นทันที
+async function prefetchOthers() {
+  for (const b of S.init.boilers) {
+    if (b.BoilerID === S.boilerId || !S.token) continue;
+    try { cacheSet(`day:${b.BoilerID}:${S.date}`, await call('getDay', b.BoilerID, S.date)); } catch (e) { return; }
+  }
+}
+
+function logout(silent) {
+  S.token = ''; S.me = null; store.set('token', ''); store.set('me', '');
+  closeSheet(); showLogin();
+  if (!silent) toast('ออกจากระบบแล้ว');
+}
+const initial = n => String(n || '').replace(/^(นาย|นางสาว|นาง|น\.ส\.)\s*/, '').trim().charAt(0) || '?';
+
+async function loadDay() {
+  const key = dayKey(), cached = cacheGet(key);
+  if (cached) { S.day = cached; render(); }   // แสดงของที่จำไว้ก่อน แล้วค่อยอัปเดต
+  else { $('slots').innerHTML = '<p class="muted" style="text-align:center;margin:20px 0">กำลังโหลด…</p>'; $('addBtn').disabled = true; }
+  (cached ? bg : busy)(true);
+  try {
+    const d = await call('getDay', S.boilerId, S.date);
+    cacheSet(key, d);
+    if (key === dayKey()) { S.day = d; render(); }
+  } catch (e) { toast(e.message, true); }
+  finally { (cached ? bg : busy)(false); $('addBtn').disabled = false; }
+}
+function setDay(d) { S.day = d; cacheSet(dayKey(), d); render(); }
+
+/* ---------- render ---------- */
+function renderBoilers() {
+  $('boilers').innerHTML = S.init.boilers.map(b =>
+    `<button data-id="${esc(b.BoilerID)}" class="${b.BoilerID === S.boilerId ? 'on' : ''}"><b>Boiler No.${esc(b.BoilerNo)}</b> <small>(${esc(fuelShort(b))})</small></button>`).join('');
+}
+
+function render() {
+  const rs = S.day.readings, log = S.day.log || {};
+  const max = Number(boiler().MaxSteamPressure) || Infinity;
+  const steamVals = rs.map(r => r.SteamPressure).filter(v => typeof v === 'number');
+  const maxSteam = steamVals.length ? Math.max(...steamVals) : '';
+  $('stats').innerHTML = `
+    <div class="stat"><small>น้ำป้อนเข้า</small><b>${fmt(log.WaterFedPerDay,2)}</b> <em>m³</em></div>
+    <div class="stat"><small>เชื้อเพลิงที่ใช้</small><b>${fmt(log.FuelUsedPerDay,2)}</b> <em>m³</em></div>
+    <div class="stat"><small>ความดันสูงสุด</small><b style="color:${maxSteam !== '' && maxSteam > max ? 'var(--bad)' : 'inherit'}">${fmt(maxSteam)}</b> <em>bar</em></div>`;
+  $('closedBanner').hidden = !isClosed();
+  if (isClosed()) $('closedBanner').innerHTML = `<div style="flex:1">✓ ลงชื่อปิดบันทึกแล้วโดย ${esc(log.SignedBy)} · ${esc(log.SignedAt)}</div><button class="btn ghost" id="reopenTop" style="width:auto;padding:7px 12px;font-size:13px">แก้ไข</button>`;
+  const rt = $('reopenTop'); if (rt) rt.onclick = reopen;
+  $('addBtn').hidden = isClosed();
+
+  // สถานะ: ครั้งล่าสุดเมื่อไร (แนะนำให้เช็คทุก 1 ชั่วโมง ไม่บังคับ)
+  const last = rs[rs.length - 1], isToday = S.date === S.init.today;
+  const mins = last && isToday ? Math.max(0, Math.round((Date.now() - hm(last.ReadingTime)) / 60000)) : null;
+  const late = isToday && !isClosed() && (!last || mins >= CHECK_EVERY);
+  $('due').className = 'due' + (late ? ' late' : '');
+  $('due').innerHTML = !last
+    ? `<i></i><div>ยังไม่มีการบันทึก${isToday ? 'ของวันนี้' : ''} <span>· แนะนำให้เช็คทุก 1 ชั่วโมง</span></div>`
+    : `<i></i><div>บันทึกแล้ว <b>${rs.length}</b> ครั้ง · ล่าสุด <b>${esc(last.ReadingTime)}</b> น.${mins !== null ? `<br><span>${late ? 'ถึงเวลาเช็คแล้ว · ' : ''}ผ่านมา ${dur(mins)}</span>` : ''}</div>`;
+
+  const desc = [...rs].reverse();
+  $('slots').innerHTML = desc.length ? desc.map((r, i) => {
+    const alert = (typeof r.SteamPressure === 'number' && r.SteamPressure > max) || (r.WaterLevel && r.WaterLevel !== 'ปกติ');
+    const older = desc[i + 1];
+    const gap = older ? Math.round((hm(r.ReadingTime) - hm(older.ReadingTime)) / 60000) : 0;
+    return `<button class="slot done ${alert ? 'alert' : ''} ${r._pending ? 'pending' : ''}" data-id="${esc(r.ReadingID)}">
+      <div class="t"><b>${esc(r.ReadingTime)}</b><small>น.</small></div>
+      <div class="v">
+        <div class="row">
+          <span>ไอน้ำ <b>${fmt(r.SteamPressure)}</b></span>
+          <span>ระดับน้ำ ${r.WaterLevel ? `<span class="tag ${r.WaterLevel === 'ปกติ' ? '' : 'w'}">${esc(r.WaterLevel)}</span>` : '–'}</span>
+          <span>ปล่อง <b>${fmt(r.StackTemp,0)}</b>°</span>
+          <span>มิเตอร์น้ำ <b>${fmt(r.WaterMeter,2)}</b></span>
+        </div>
+        <div class="who">${r._pending ? 'กำลังบันทึก…' : esc(opName(r.OperatorID))}${r.Remarks ? ' · ' + esc(r.Remarks) : ''}</div>
+      </div><div class="st"></div></button>`
+      + (gap > CHECK_EVERY + 30 ? `<div class="gap">ห่างจากครั้งก่อน ${dur(gap)}</div>` : '');
+  }).join('') : `<p class="muted" style="text-align:center;margin:20px 0">${isClosed() ? 'ไม่มีรายการ' : 'กด “บันทึกค่าตอนนี้” เพื่อเริ่มบันทึก'}</p>`;
+
+  // summary
+  $('sumWater').innerHTML = `${fmt(log.WaterFedPerDay,2)} <small>m³/วัน</small>`;
+  $('sumFuel').innerHTML = `${fmt(log.FuelUsedPerDay,2)} <small>m³/วัน</small>`;
+  $('bdSec').value = log.BlowdownSeconds ?? ''; $('bdTimes').value = log.BlowdownTimes ?? ''; $('obs').value = log.Observations ?? '';
+  ['bdSec','bdTimes','obs','saveDaily'].forEach(id => $(id).disabled = isClosed());
+  const op = S.me || {};
+  $('signCard').innerHTML = isClosed()
+    ? `<div class="closed" style="margin:0 0 12px">✓ ${esc(log.SignedBy)}<br>ลงชื่อเมื่อ ${esc(log.SignedAt)}</div>
+       <button class="btn ghost" id="reopenBtn">เปิดแก้ไขบันทึก</button>`
+    : `<p class="muted" style="margin:0 0 4px">ลงชื่อในนาม</p>
+       <div style="font-weight:600;font-size:16px">${esc(op.OperatorName || '—')}</div>
+       <p class="muted" style="margin:2px 0 12px">ทะเบียนผู้ควบคุมเลขที่ ${esc(op.LicenseNo || '—')}</p>
+       ${log.ReopenedBy ? `<p class="muted" style="margin:0 0 8px;color:var(--warn)">เปิดแก้ไขโดย ${esc(log.ReopenedBy)} · ${esc(log.ReopenedAt)}</p>` : ''}
+       <p class="muted" style="margin:0 0 12px">บันทึกแล้ว ${rs.length} ครั้ง — ถ้าต้องแก้ไขภายหลัง กด "เปิดแก้ไขบันทึก" ได้</p>
+       <button class="btn" id="signBtn">ลงชื่อปิดบันทึกประจำวัน</button>`;
+  const sb = $('signBtn'); if (sb) sb.onclick = sign;
+  const rb = $('reopenBtn'); if (rb) rb.onclick = reopen;
+  if (S.tab === 'report' && S.rmode === 'day') renderDailyForm();
+}
+
+async function renderHistory() {
+  $('histTitle').textContent = `ประวัติย้อนหลัง · ${boilerName()}`;
+  const hk = 'hist:' + S.boilerId, cached = cacheGet(hk);
+  if (cached) drawHistory(cached); else $('hist').innerHTML = '<p class="muted">กำลังโหลด…</p>';
+  bg(true);
+  try {
+    const list = await call('getHistory', S.boilerId);
+    cacheSet(hk, list);
+    drawHistory(list);
+  } catch (e) { toast(e.message, true); }
+  finally { bg(false); }
+}
+function drawHistory(list) {
+  {
+    const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    $('hist').innerHTML = list.length ? list.map(l => {
+      const [y,m,d] = String(l.LogDate).split('-');
+      return `<button class="hi" data-d="${esc(l.LogDate)}">
+        <div class="d"><b>${+d}</b><small>${TH_M[+m-1]} ${+y+543-2500}</small></div>
+        <div class="m">
+          <div style="margin-bottom:2px">${l.Status === 'ปิดบันทึกแล้ว' ? '<span class="tag">ลงชื่อแล้ว</span>' : '<span class="tag w">ยังไม่ปิด</span>'} <span class="muted">${l.ReadingsCount} ครั้ง</span></div>
+          <div class="row"><span>น้ำ <b>${fmt(l.WaterFedPerDay,2)}</b></span><span>เชื้อเพลิง <b>${fmt(l.FuelUsedPerDay,2)}</b></span><span>สูงสุด <b>${fmt(l.MaxSteam)}</b> bar</span></div>
+        </div></button>`;
+    }).join('') : '<p class="muted">ยังไม่มีบันทึก</p>';
+  }
+}
+
+/* ---------- hourly form ---------- */
+function openReading(id) {
+  const r = id ? (S.day.readings.find(x => x.ReadingID === id) || {}) : {};
+  S.editId = id || '';
+  const now = new Date();
+  $('ReadingTime').value = r.ReadingTime || (S.date === S.init.today ? `${pad2(now.getHours())}:${pad2(now.getMinutes())}` : '');
+  $('ReadingTime').disabled = isClosed();
+  $('sheetTitle').textContent = `${id ? 'แก้ไขบันทึก' : 'บันทึกค่าใหม่'} · ${boilerName()}`;
+  FIELDS.forEach(f => { $(f).value = r[f] ?? ''; $(f).disabled = isClosed(); });
+  S.level = r.WaterLevel || '';
+  refreshPrev(); paintLevel(); validate();
+  $('saveReading').hidden = isClosed();
+  $('delReading').hidden = isClosed() || !id;
+  $('scrim').classList.add('open'); $('sheet').classList.add('open');
+}
+// ค่าครั้งก่อนหน้า (ตามเวลาที่เลือก) ใช้เทียบเลขมิเตอร์
+function refreshPrev() {
+  const t = $('ReadingTime').value || '99:99';
+  S.prev = S.day.readings.filter(x => x.ReadingID !== S.editId && x.ReadingTime <= t).pop() || {};
+  $('WaterMeter').placeholder = S.prev.WaterMeter !== undefined && S.prev.WaterMeter !== '' ? `ครั้งก่อน ${S.prev.WaterMeter}` : '';
+  $('FuelMeter').placeholder = S.prev.FuelMeter !== undefined && S.prev.FuelMeter !== '' ? `ครั้งก่อน ${S.prev.FuelMeter}` : '';
+}
+function closeSheet() { $('scrim').classList.remove('open'); $('sheet').classList.remove('open'); }
+function paintLevel() { [...$('lvl').children].forEach(b => { b.classList.toggle('on', b.dataset.v === S.level); b.disabled = isClosed(); }); }
+
+function validate() {
+  const max = Number(boiler().MaxSteamPressure) || Infinity;
+  const sp = $('SteamPressure').value;
+  const over = sp !== '' && Number(sp) > max;
+  $('fSteam').classList.toggle('bad', over);
+  $('hSteam').className = 'hint' + (over ? ' bad' : '');
+  $('hSteam').textContent = over ? `⚠ เกินความดันใช้งานสูงสุด (${max} bar) — แจ้งหัวหน้าทันที` : (isFinite(max) ? `ความดันใช้งานสูงสุด ${max} bar` : '');
+  const w = $('WaterMeter').value, pw = S.prev.WaterMeter;
+  const back = w !== '' && pw !== undefined && pw !== '' && Number(w) < Number(pw);
+  $('hWater').className = 'hint' + (back ? ' warn' : '');
+  $('hWater').textContent = back ? 'เลขมิเตอร์น้อยกว่าครั้งก่อน — ตรวจสอบอีกครั้ง' : (w !== '' && pw !== '' && pw !== undefined ? `เพิ่มขึ้น ${fmt(Number(w) - Number(pw), 2)} m³ จากครั้งก่อน (${esc(S.prev.ReadingTime)} น.)` : '');
+  const fu = $('FuelMeter').value, pf = S.prev.FuelMeter;
+  const fback = fu !== '' && pf !== undefined && pf !== '' && Number(fu) < Number(pf);
+  $('hFuel').style.color = fback ? 'var(--warn)' : '';
+  $('hFuel').textContent = fback ? 'เลขมิเตอร์เชื้อเพลิงน้อยกว่าครั้งก่อน — ตรวจสอบอีกครั้ง' : '';
+}
+
+async function saveReading() {
+  const t = $('ReadingTime').value;
+  if (!/^\d{2}:\d{2}$/.test(t)) return toast('กรุณาใส่เวลาที่ตรวจเช็ค', true);
+  if ($('SteamPressure').value === '') return toast('กรุณากรอกความดันไอน้ำ', true);
+  if (!S.level) return toast('กรุณาเลือกระดับน้ำในหลอดแก้ว', true);
+  const payload = { ReadingID: S.editId, BoilerID: S.boilerId, LogDate: S.date, ReadingTime: t, WaterLevel: S.level };
+  FIELDS.forEach(f => payload[f] = $(f).value);
+  // แสดงผลทันที (ไม่ต้องรอเซิร์ฟเวอร์) แล้วค่อยยืนยันเบื้องหลัง
+  const before = S.day, key = dayKey(), editId = S.editId;
+  const local = { ...payload, ReadingID: editId || 'tmp-' + Date.now(), OperatorID: S.me.OperatorID, _pending: true };
+  ['SteamPressure','FeedPumpPressure','FeedWaterTemp','WaterMeter','FuelPressure','FuelMeter','StackTemp'].forEach(k => local[k] = local[k] === '' ? '' : Number(local[k]));
+  const rs = before.readings.filter(x => x.ReadingID !== editId).concat(local).sort((a, b) => a.ReadingTime < b.ReadingTime ? -1 : 1);
+  S.day = { ...before, readings: rs }; render(); closeSheet();
+  bg(true);
+  try {
+    const d = await call('saveReading', payload);
+    cacheSet(key, d);
+    if (key === dayKey()) { S.day = d; render(); }
+    toast(`บันทึกเวลา ${t} น. แล้ว`);
+  } catch (e) {
+    if (key === dayKey()) { S.day = before; render(); openReading(editId || null); FIELDS.forEach(f => $(f).value = payload[f]); $('ReadingTime').value = t; S.level = payload.WaterLevel; paintLevel(); validate(); }
+    toast('บันทึกไม่สำเร็จ: ' + e.message, true);
+  } finally { bg(false); }
+}
+
+// อัปเดตหน้าจอทันที แล้วบันทึกเบื้องหลัง — ถ้าไม่สำเร็จจะย้อนกลับให้
+async function optimistic(mutate, fn, args, okMsg) {
+  const before = S.day, key = dayKey();
+  const draft = JSON.parse(JSON.stringify(before || { logId: key, log: null, readings: [] }));
+  S.day = mutate(draft) || draft; render();
+  bg(true);
+  try {
+    const d = await call(fn, ...args);
+    cacheSet(key, d);
+    if (key === dayKey()) { S.day = d; render(); }
+    if (okMsg) toast(okMsg);
+    return true;
+  } catch (e) {
+    if (key === dayKey()) { S.day = before; render(); }
+    toast('ไม่สำเร็จ: ' + e.message, true);
+    return false;
+  } finally { bg(false); }
+}
+const nowStamp = () => { const n = new Date(); return `${n.getFullYear()}-${pad2(n.getMonth() + 1)}-${pad2(n.getDate())} ${pad2(n.getHours())}:${pad2(n.getMinutes())}`; };
+
+async function deleteReading() {
+  const id = S.editId, r = S.day.readings.find(x => x.ReadingID === id); if (!r) return;
+  if (!confirm(`ลบบันทึกเวลา ${r.ReadingTime} น.?`)) return;
+  closeSheet();
+  optimistic(d => { d.readings = d.readings.filter(x => x.ReadingID !== id); return d; }, 'deleteReading', [id, S.boilerId, S.date], 'ลบแล้ว');
+}
+
+function saveDaily(sign) {
+  const payload = { BoilerID: S.boilerId, LogDate: S.date, BlowdownSeconds: $('bdSec').value, BlowdownTimes: $('bdTimes').value, Observations: $('obs').value, sign: !!sign };
+  return optimistic(d => {
+    d.log = d.log || { Status: 'กำลังบันทึก' };
+    d.log.BlowdownSeconds = nzv(payload.BlowdownSeconds) ?? ''; d.log.BlowdownTimes = nzv(payload.BlowdownTimes) ?? ''; d.log.Observations = payload.Observations;
+    if (sign) Object.assign(d.log, { Status: 'ปิดบันทึกแล้ว', OperatorID: S.me.OperatorID, SignedBy: S.me.OperatorName + (S.me.LicenseNo ? ` (ทะเบียน ${S.me.LicenseNo})` : ''), SignedAt: nowStamp() });
+    return d;
+  }, 'saveDaily', [payload], sign ? 'ลงชื่อปิดบันทึกแล้ว' : 'บันทึกสรุปแล้ว');
+}
+function reopen() {
+  if (!confirm('เปิดแก้ไขบันทึกของวันนี้?\nลายเซ็นเดิมจะถูกยกเลิก และต้องลงชื่อปิดใหม่หลังแก้ไขเสร็จ')) return;
+  optimistic(d => { if (d.log) Object.assign(d.log, { Status: 'กำลังบันทึก', SignedBy: '', SignedAt: '', ReopenedBy: S.me.OperatorName, ReopenedAt: nowStamp() }); return d; },
+    'reopenDaily', [S.boilerId, S.date], 'เปิดแก้ไขแล้ว — อย่าลืมลงชื่อปิดอีกครั้ง');
+}
+function sign() {
+  const n = S.day.readings.length;
+  if (!confirm((n === 0 ? 'ยังไม่มีการบันทึกค่าเลย\n' : `บันทึกแล้ว ${n} ครั้ง\n`) + 'ยืนยันลงชื่อปิดบันทึกประจำวัน?')) return;
+  saveDaily(true);
+}
+
+function setTab(tab) {
+  S.tab = tab;
+  ['hourly','summary','report','history'].forEach(t => $('tab-' + t).hidden = t !== tab);
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  if (tab === 'history') renderHistory();
+  if (tab === 'report') renderReport();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- events ---------- */
+$('boilers').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.boilerId = b.dataset.id; store.set('boiler', S.boilerId); renderBoilers(); loadDay(); if (S.tab === 'history') renderHistory(); };
+$('logoutBtn').onclick = () => { if (confirm('ออกจากระบบ?')) logout(); };
+$('eyeBtn').onclick = () => { const p = $('pinInput'); p.type = p.type === 'password' ? 'text' : 'password'; $('eyeBtn').textContent = p.type === 'password' ? 'แสดง' : 'ซ่อน'; };
+$('userInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('pinInput').focus(); });
+$('loginBtn').onclick = doLogin;
+$('pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+$('date').onchange = e => { if (e.target.value) { S.date = e.target.value; loadDay(); } };
+$('slots').onclick = e => { const b = e.target.closest('.slot'); if (b) openReading(b.dataset.id); };
+$('addBtn').onclick = () => openReading(null);
+$('delReading').onclick = deleteReading;
+$('ReadingTime').addEventListener('input', () => { refreshPrev(); validate(); });
+$('lvl').onclick = e => { const b = e.target.closest('button'); if (!b || isClosed()) return; S.level = b.dataset.v; paintLevel(); };
+['SteamPressure','WaterMeter','FuelMeter'].forEach(id => $(id).addEventListener('input', validate));
+$('saveReading').onclick = saveReading;
+$('saveDaily').onclick = () => saveDaily(false);
+$('sheetClose').onclick = closeSheet; $('scrim').onclick = closeSheet;
+document.querySelector('nav').onclick = e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); };
+$('hist').onclick = e => { const b = e.target.closest('.hi'); if (!b) return; S.date = b.dataset.d; $('date').value = S.date; setTab('hourly'); loadDay(); };
+
+
+/* ---------- รายงาน ---------- */
+const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const thDate = d => { const [y, m, dd] = String(d).split('-'); return `${+dd} ${TH_MONTHS[+m - 1]} ${+y + 543}`; };
+const SERIES_COLORS = ['#2a78d6', '#eb6834', '#1baf7a'];   // สีประจำหม้อน้ำ (ตามลำดับ ไม่สลับ)
+const nz = x => (x === '' || x === null || x === undefined || isNaN(Number(x))) ? null : Number(x);
+const v0 = (x, d = 1) => nz(x) === null ? '' : fmt(x, d);
+
+function renderReport() {
+  [...$('rmode').children].forEach(b => b.classList.toggle('on', b.dataset.m === S.rmode));
+  $('rDay').hidden = S.rmode !== 'day'; $('rMonth').hidden = S.rmode !== 'month';
+  if (S.rmode === 'day') renderDailyForm(); else loadMonth();
+}
+
+function dailyFormHTML() {
+  const b = boiler(), rs = S.day ? S.day.readings : [], log = (S.day && S.day.log) || {};
+  const rows = [...rs]; while (rows.length < 12) rows.push(null);
+  const signed = log.Status === 'ปิดบันทึกแล้ว';
+  const signer = signed ? (S.init.operators.find(o => o.OperatorID === log.OperatorID) || {}) : null;
+  return `<div class="paper">
+    <h1>บันทึกประจำวันของหม้อน้ำ (Boiler Daily Log)</h1>
+    <div class="meta">
+      <span>วันที่ <span class="line" style="min-width:170px">${thDate(S.date)}</span></span>
+      <span>เชื้อเพลิงชนิด <span class="line" style="min-width:170px">${esc(b.FuelType || '')}</span></span>
+      <span>หม้อน้ำหมายเลข <span class="line" style="min-width:60px">${esc(b.BoilerNo)}</span></span>
+    </div>
+    <table><thead>
+      <tr><th rowspan="2" style="width:56px">เวลา</th><th rowspan="2" style="width:170px">ชื่อผู้ควบคุม</th><th rowspan="2">ความดัน<br>ไอน้ำ (bar)</th><th rowspan="2">ระดับน้ำ<br>ในหลอดแก้ว</th>
+          <th colspan="3">ปั๊มน้ำเข้าหม้อน้ำ</th><th colspan="2">เชื้อเพลิง</th><th rowspan="2">อุณหภูมิ<br>ที่ปล่องไฟ (°C)</th><th rowspan="2" style="width:140px">หมายเหตุ</th></tr>
+      <tr><th>ความดัน<br>(kg/cm²)</th><th>อุณหภูมิ<br>น้ำเข้า (°C)</th><th>เลข<br>มิเตอร์น้ำ</th><th>ความดัน<br>(kg/cm²)</th><th>เลข<br>มิเตอร์</th></tr>
+    </thead><tbody>${rows.map(r => r ? `<tr><td>${esc(r.ReadingTime)}</td><td class="l">${esc(opName(r.OperatorID))}</td><td>${v0(r.SteamPressure)}</td><td>${esc(r.WaterLevel || '')}</td><td>${v0(r.FeedPumpPressure)}</td><td>${v0(r.FeedWaterTemp)}</td><td>${v0(r.WaterMeter, 2)}</td><td>${v0(r.FuelPressure)}</td><td>${v0(r.FuelMeter, 2)}</td><td>${v0(r.StackTemp, 0)}</td><td class="l">${esc(r.Remarks || '')}</td></tr>`
+      : `<tr>${'<td>&nbsp;</td>'.repeat(11)}</tr>`).join('')}</tbody></table>
+    <div class="foot">
+      <div>ประมาณน้ำที่ป้อนเข้าหม้อน้ำ <span class="line">${v0(log.WaterFedPerDay, 2)}</span> m³/วัน</div>
+      <div class="obs"><b>ข้อสังเกต</b><br>${esc(log.Observations || '')}</div>
+      <div>ประมาณของเชื้อเพลิงที่ใช้ <span class="line">${v0(log.FuelUsedPerDay, 2)}</span> m³/วัน</div>
+      <div>ระบายน้ำ (Blow Down) ประมาณ <span class="line" style="min-width:60px">${v0(log.BlowdownSeconds, 0)}</span> วินาที <span class="line" style="min-width:60px">${v0(log.BlowdownTimes, 0)}</span> จำนวนครั้งต่อวัน</div>
+      <div>หมายเหตุ ให้กรอกข้อความทุก 1 ชั่วโมง</div>
+    </div>
+    <div class="sign">(ลงชื่อ) <span class="line" style="min-width:260px">${signer ? esc(signer.OperatorName) : ''}</span><br>
+      (ผู้ควบคุมประจำหม้อน้ำ ทะเบียนผู้ควบคุมเลขที่ <span class="line" style="min-width:140px">${signer ? esc(signer.LicenseNo || '') : ''}</span>)
+      ${signer ? `<div style="font-size:11px;line-height:1.4">ลงชื่อในระบบ BNC Boiler Daily เมื่อ ${esc(log.SignedAt)}</div>` : ''}</div>
+  </div>`;
+}
+function renderDailyForm() {
+  if (!S.day) return;
+  $('paperScale').innerHTML = dailyFormHTML();
+  $('rDayInfo').textContent = `${boilerName()} · ${thDate(S.date)} · ${isClosed() ? 'ลงชื่อแล้ว' : 'ยังไม่ลงชื่อปิดบันทึก'}`;
+  fitPaper();
+}
+function fitPaper() {
+  const wrap = $('paperWrap'), el = $('paperScale');
+  if (!wrap || wrap.offsetParent === null) return;
+  const sc = Math.min(1, (wrap.clientWidth - 20) / 1000);
+  el.style.transform = `scale(${sc})`;
+  wrap.style.height = (el.firstElementChild.offsetHeight * sc + 20) + 'px';
+}
+function printHTML(html, landscape) {
+  $('pageStyle').textContent = `@page{size:A4 ${landscape ? 'landscape' : 'portrait'};margin:10mm}`;
+  $('printArea').innerHTML = html;
+  setTimeout(() => window.print(), 50);
+}
+
+async function loadMonth() {
+  if (!S.month) S.month = S.date.slice(0, 7);
+  $('rMonthIn').value = S.month;
+  if (!$('rBoiler').options.length) $('rBoiler').innerHTML = `<option value="">ทุกหม้อน้ำ</option>` + S.init.boilers.map(b => `<option value="${esc(b.BoilerID)}">${esc(boilerName(b))}</option>`).join('');
+  $('rBoiler').value = S.rBoiler || '';
+  const k = 'month:' + S.month, c = cacheGet(k);
+  if (c) { S.monthData = c; drawMonth(); } else $('monthBody').innerHTML = '<p class="muted">กำลังโหลด…</p>';
+  (c ? bg : busy)(true);
+  try { const d = await call('getMonthReport', S.month); cacheSet(k, d); if (k === 'month:' + S.month) { S.monthData = d; drawMonth(); } }
+  catch (e) { toast(e.message, true); }
+  finally { (c ? bg : busy)(false); }
+}
+
+function monthModel() {
+  const [y, m] = S.month.split('-').map(Number), nDays = new Date(y, m, 0).getDate();
+  const boilers = S.init.boilers.filter(b => !S.rBoiler || b.BoilerID === S.rBoiler);
+  const colorOf = b => SERIES_COLORS[S.init.boilers.findIndex(x => x.BoilerID === b.BoilerID) % SERIES_COLORS.length];
+  const logs = (S.monthData || []).filter(l => boilers.some(b => b.BoilerID === l.BoilerID));
+  const maxOf = id => Number((S.init.boilers.find(x => x.BoilerID === id) || {}).MaxSteamPressure) || Infinity;
+  return { y, m, nDays, boilers, colorOf, logs, maxOf, title: `${TH_MONTHS[m - 1]} ${y + 543}` };
+}
+
+function drawMonth() { $('monthBody').innerHTML = monthHTML(); }
+function monthHTML(printW) {
+  const M = monthModel(), { logs, boilers, nDays } = M;
+  const sum = k => logs.reduce((a, l) => a + (nz(l[k]) || 0), 0);
+  const days = new Set(logs.map(l => l.LogDate)).size;
+  const unsigned = logs.filter(l => l.Status !== 'ปิดบันทึกแล้ว').length;
+  const over = logs.filter(l => nz(l.MaxSteam) !== null && nz(l.MaxSteam) > M.maxOf(l.BoilerID)).length;
+  const totW = sum('WaterFedPerDay'), totF = sum('FuelUsedPerDay');
+  const tiles = `<div class="tiles">
+    <div class="stat"><small>น้ำป้อนเข้า รวมทั้งเดือน</small><b>${fmt(totW, 2)}</b> <em>m³</em></div>
+    <div class="stat"><small>เชื้อเพลิงที่ใช้ รวมทั้งเดือน</small><b>${fmt(totF, 2)}</b> <em>m³</em></div>
+    <div class="stat"><small>วันที่มีบันทึก</small><b>${days}</b> <em>/ ${nDays} วัน</em></div>
+    <div class="stat"><small>ยังไม่ลงชื่อ / ความดันเกิน</small><b style="color:${unsigned || over ? 'var(--bad)' : 'inherit'}">${unsigned} / ${over}</b> <em>รายการ</em></div>
+  </div>`;
+  const ser = k => boilers.map(b => ({ name: boilerName(b), color: M.colorOf(b),
+    values: Array.from({ length: nDays }, (_, i) => { const d = `${S.month}-${pad2(i + 1)}`; const l = logs.find(x => x.BoilerID === b.BoilerID && x.LogDate === d); return l ? nz(l[k]) : null; }) }))
+    .filter(s => s.values.some(v => v !== null));
+  S.charts = [];
+  const charts = lineChart('น้ำที่ป้อนเข้าหม้อน้ำต่อวัน', 'm³', nDays, ser('WaterFedPerDay'), printW)
+               + lineChart('เชื้อเพลิงที่ใช้ต่อวัน', 'm³', nDays, ser('FuelUsedPerDay'), printW);
+  const rows = logs.map(l => {
+    const b = S.init.boilers.find(x => x.BoilerID === l.BoilerID) || {};
+    const isOver = nz(l.MaxSteam) !== null && nz(l.MaxSteam) > M.maxOf(l.BoilerID);
+    return `<tr class="${isOver ? 'over' : ''}" data-b="${esc(l.BoilerID)}" data-d="${esc(l.LogDate)}">
+      <td>${+String(l.LogDate).slice(8)} ${TH_MONTHS[M.m - 1].slice(0, 3)}.</td><td>No.${esc(b.BoilerNo)}</td><td>${l.ReadingsCount ?? ''}</td>
+      <td>${v0(l.WaterFedPerDay, 2)}</td><td>${v0(l.FuelUsedPerDay, 2)}</td><td>${v0(l.MaxSteam)}${isOver ? ' ⚠' : ''}</td>
+      <td>${nz(l.BlowdownSeconds) !== null ? `${v0(l.BlowdownSeconds, 0)} วิ × ${v0(l.BlowdownTimes, 0)}` : ''}</td>
+      <td>${l.Status === 'ปิดบันทึกแล้ว' ? '<span class="tag">ลงชื่อแล้ว</span>' : '<span class="tag w">ยังไม่ปิด</span>'}</td></tr>`;
+  }).join('');
+  const foot = boilers.map(b => {
+    const ls = logs.filter(l => l.BoilerID === b.BoilerID); if (!ls.length) return '';
+    const s = k => ls.reduce((a, l) => a + (nz(l[k]) || 0), 0);
+    const mx = ls.map(l => nz(l.MaxSteam)).filter(v => v !== null);
+    return `<tr><td>รวม</td><td>No.${esc(b.BoilerNo)}</td><td>${ls.length} วัน</td><td>${fmt(s('WaterFedPerDay'), 2)}</td><td>${fmt(s('FuelUsedPerDay'), 2)}</td><td>${mx.length ? fmt(Math.max(...mx)) : '–'}</td><td></td><td>${ls.filter(l => l.Status !== 'ปิดบันทึกแล้ว').length ? ls.filter(l => l.Status !== 'ปิดบันทึกแล้ว').length + ' ยังไม่ปิด' : 'ครบ'}</td></tr>
+      <tr><td>เฉลี่ย/วัน</td><td>No.${esc(b.BoilerNo)}</td><td></td><td>${fmt(s('WaterFedPerDay') / ls.length, 2)}</td><td>${fmt(s('FuelUsedPerDay') / ls.length, 2)}</td><td></td><td></td><td></td></tr>`;
+  }).join('');
+  const table = logs.length ? `<div class="tscroll"><table class="mtable"><thead><tr><th>วันที่</th><th>หม้อน้ำ</th><th>ครั้ง</th><th>น้ำ (m³)</th><th>เชื้อเพลิง (m³)</th><th>ความดันสูงสุด</th><th>Blow Down</th><th>สถานะ</th></tr></thead>
+    <tbody>${rows}</tbody><tfoot>${foot}</tfoot></table></div><p class="muted" style="margin:0 2px 10px">แตะแถวเพื่อเปิดรายงานรายวันของวันนั้น · แถวสีแดง = ความดันสูงสุดเกินค่าที่กำหนด</p>`
+    : '<p class="muted" style="text-align:center;margin:24px 0">ยังไม่มีบันทึกในเดือนนี้</p>';
+  return `<h2 class="ptitle" style="font-size:18px;color:#000">รายงานประจำเดือน ${M.title} · ${S.rBoiler ? esc(boilerName(boilers[0])) : 'ทุกหม้อน้ำ'} · BNC Boiler Daily</h2>
+    <h2 class="stitle" style="margin-top:4px">${M.title} · ${S.rBoiler ? esc(boilerName(boilers[0])) : 'ทุกหม้อน้ำ'}</h2>` + tiles + (logs.length ? charts : '') + table;
+}
+
+const niceMax = v => { if (v <= 0) return 1; const p = 10 ** Math.floor(Math.log10(v)), n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; };
+function lineChart(title, unit, nDays, series, printW) {
+  const W = printW || Math.max(300, Math.min(760, ($('monthBody').clientWidth || 360) - 24)), H = printW ? 190 : 200, L = 40, Rr = 10, T = 12, B = 24;
+  const all = series.flatMap(s => s.values.filter(v => v !== null));
+  if (!all.length) return `<div class="chart"><h3>${title}</h3><p class="muted">ยังไม่มีข้อมูล</p></div>`;
+  const max = niceMax(Math.max(...all)), x = d => L + (d - 1) * (W - L - Rr) / Math.max(1, nDays - 1), y = v => T + (H - T - B) * (1 - v / max);
+  const grid = [0, .25, .5, .75, 1].map(f => `<line x1="${L}" x2="${W - Rr}" y1="${y(max * f)}" y2="${y(max * f)}" stroke="${f ? '#E4E8EC' : '#C9D1D9'}" stroke-width="1"/><text x="${L - 6}" y="${y(max * f) + 4}" text-anchor="end">${fmt(max * f, 1)}</text>`).join('');
+  const ticks = (W < 420 ? [1, 10, 20, nDays] : [1, 5, 10, 15, 20, 25, nDays]).filter((d, i, a) => d <= nDays && a.indexOf(d) === i && !(d !== nDays && nDays - d < 3))
+    .map(d => `<text x="${x(d)}" y="${H - 6}" text-anchor="middle">${d}</text>`).join('');
+  const paths = series.map(s => {
+    let d = '', prev = null; const dots = [];
+    s.values.forEach((v, i) => { if (v === null) { prev = null; return; } d += `${prev === null ? 'M' : 'L'}${x(i + 1).toFixed(1)},${y(v).toFixed(1)}`; if (prev === null && (s.values[i + 1] ?? null) === null) dots.push(i); prev = v; });
+    return `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` + dots.map(i => `<circle cx="${x(i + 1)}" cy="${y(s.values[i])}" r="3.5" fill="${s.color}"/>`).join('');
+  }).join('');
+  const idx = S.charts.push({ W, L, Rr, nDays, series, unit, x, y }) - 1;
+  const legend = series.length > 1 ? `<div class="lg">${series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}</div>` : '';
+  return `<div class="chart" data-ci="${idx}"><h3>${title}</h3><div class="sub">หน่วย: ${unit} · แกนนอน = วันที่ในเดือน</div>${legend}
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">${grid}${ticks}${paths}
+      <line class="hl" y1="${T}" y2="${H - B}" stroke="#13202B" stroke-opacity=".35" stroke-width="1" style="display:none"/><g class="hd"></g>
+      <rect x="${L}" y="0" width="${W - L - Rr}" height="${H}" fill="transparent" class="hit"/></svg><div class="tip"></div></div>`;
+}
+function chartHover(e) {
+  const box = e.target.closest('.chart'); if (!box || box.dataset.ci === undefined) return;
+  const C = S.charts[+box.dataset.ci], svg = box.querySelector('svg'), r = svg.getBoundingClientRect();
+  const vx = (e.clientX - r.left) * C.W / r.width;
+  const day = Math.min(C.nDays, Math.max(1, Math.round((vx - C.L) / ((C.W - C.L - C.Rr) / Math.max(1, C.nDays - 1))) + 1));
+  const hl = svg.querySelector('.hl'), hd = svg.querySelector('.hd'), tip = box.querySelector('.tip');
+  hl.setAttribute('x1', C.x(day)); hl.setAttribute('x2', C.x(day)); hl.style.display = '';
+  hd.innerHTML = C.series.map(s => s.values[day - 1] === null ? '' : `<circle cx="${C.x(day)}" cy="${C.y(s.values[day - 1])}" r="4.5" fill="${s.color}" stroke="#fff" stroke-width="2"/>`).join('');
+  const any = C.series.some(s => s.values[day - 1] !== null);
+  tip.innerHTML = `<b>วันที่ ${day}</b><br>` + (!any ? 'ไม่มีบันทึก' : C.series.map(s => `<i style="background:${s.color}"></i>${esc(s.name)}: <b>${s.values[day - 1] === null ? '–' : fmt(s.values[day - 1], 2)}</b> ${C.unit === 'm³' ? 'm³' : ''}`).join('<br>'));
+  tip.style.display = 'block';
+  const bx = box.getBoundingClientRect(), px = e.clientX - bx.left;
+  tip.style.left = Math.min(Math.max(8, px + 12), bx.width - tip.offsetWidth - 8) + 'px'; tip.style.top = '40px';
+}
+function chartLeave(e) { const box = e.target.closest('.chart'); if (!box) return; box.querySelector('.tip') && (box.querySelector('.tip').style.display = 'none'); const hl = box.querySelector('.hl'); if (hl) hl.style.display = 'none'; const hd = box.querySelector('.hd'); if (hd) hd.innerHTML = ''; }
+
+function downloadCSV() {
+  const M = monthModel();
+  const rows = [['วันที่', 'หม้อน้ำ', 'จำนวนครั้งที่บันทึก', 'น้ำที่ป้อนเข้า (m3)', 'เชื้อเพลิงที่ใช้ (m3)', 'ความดันสูงสุด (bar)', 'Blow Down (วินาที)', 'Blow Down (ครั้ง/วัน)', 'สถานะ', 'ผู้ลงชื่อ', 'ลงชื่อเมื่อ', 'ข้อสังเกต']];
+  M.logs.forEach(l => { const b = S.init.boilers.find(x => x.BoilerID === l.BoilerID) || {};
+    rows.push([l.LogDate, 'Boiler No.' + b.BoilerNo, l.ReadingsCount ?? '', l.WaterFedPerDay ?? '', l.FuelUsedPerDay ?? '', l.MaxSteam ?? '', l.BlowdownSeconds ?? '', l.BlowdownTimes ?? '', l.Status || '', l.SignedBy || '', l.SignedAt || '', l.Observations || '']); });
+  const csv = '﻿' + rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = `BNC-Boiler-${S.month}${S.rBoiler ? '-' + S.rBoiler : ''}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('ดาวน์โหลดแล้ว — เปิดด้วย Excel ได้เลย');
+  } catch (e) { toast('ดาวน์โหลดไม่ได้ในเบราว์เซอร์นี้', true); }
+}
+
+$('rmode').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.rmode = b.dataset.m; renderReport(); };
+$('printDay').onclick = () => { if (!S.day) return; printHTML(dailyFormHTML(), true); };
+$('printMonth').onclick = () => { if (!S.monthData) return; printHTML(monthHTML(700), false); drawMonth(); };
+$('csvMonth').onclick = downloadCSV;
+$('rMonthIn').onchange = e => { if (e.target.value) { S.month = e.target.value; loadMonth(); } };
+$('rBoiler').onchange = e => { S.rBoiler = e.target.value; drawMonth(); };
+$('monthBody').addEventListener('pointermove', chartHover);
+$('monthBody').addEventListener('pointerdown', chartHover);
+$('monthBody').addEventListener('pointerleave', chartLeave, true);
+$('monthBody').addEventListener('click', e => { const tr = e.target.closest('tbody tr[data-d]'); if (!tr) return;
+  S.boilerId = tr.dataset.b; S.date = tr.dataset.d; $('date').value = S.date; store.set('boiler', S.boilerId); renderBoilers(); S.rmode = 'day'; renderReport(); loadDay(); });
+let rsT; window.addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(() => { if (S.tab !== 'report') return; S.rmode === 'day' ? fitPaper() : (S.monthData && drawMonth()); }, 150); });
+
+start();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
